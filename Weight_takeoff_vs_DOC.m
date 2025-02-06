@@ -11,9 +11,9 @@ Debug = 0;
 
 Swept_angle = 0;
 AR = 9;
-Weight_takeoff = 200000;
+Weight_takeoff = 100000;
 Weight_takeoff_max = 1000000;
-Weight_takeoff_step_size = 100000;
+Weight_takeoff_step_size = 10000;
 
 
 % C_L loop constants
@@ -271,6 +271,13 @@ for i = 1:Weight_takeoff_number_of_steps
             % Weight fixed equipment = Weight_fixed_equipment + 0.035*Weight_takeoff
             Weight_fixed_equipment = 132 * PAX + 300 * Number_of_engine + 260 * N_flight_crew + 170* N_cabin_attendants;
             Weight_fixed_equipment = Weight_fixed_equipment + 0.035*Weight_takeoff;
+
+            % Weight calculation for advanced technology
+            if Advanced_technology == 1
+                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*0.3 - Weight_fuselage*0.15 - (Weight_fixed_equipment)*0.1 - Weight_nacelle_pylon * 0.2;
+            elseif Advanced_technology == 2
+                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*0.06 - Weight_fuselage*0.06;
+            end
 
             % Reference area
             S_ref = Weight_takeoff / WL_takeoff;
