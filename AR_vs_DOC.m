@@ -9,9 +9,9 @@ Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite mate
 Debug = 0;
 
 
-Swept_angle = 30;
+Swept_angle = 0;
 
-AR = 5;
+AR = 3;
 AR_max = 20;
 AR_step_size = 1;
 
