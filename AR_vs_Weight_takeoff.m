@@ -9,11 +9,11 @@ Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite mate
 Debug = 0;
 
 
-Swept_angle = 30;
-AR = 9;
-Weight_takeoff = 200000;
-Weight_takeoff_max = 300000;
-Weight_takeoff_step_size = 10000;
+Swept_angle = 0;
+
+AR = 3;
+AR_max = 20;
+AR_step_size = 1;
 
 
 % C_L loop constants
@@ -55,10 +55,10 @@ JT8D = 0; % 1 for JT8D engine and 0 for JT9D engine
 
 fprintf("Swept angle = %.4f degree.\n", Swept_angle)
 
-Weight_takeoff_number_of_steps = (Weight_takeoff_max - Weight_takeoff) / Weight_takeoff_step_size;
+AR_number_of_steps = (AR_max - AR) / AR_step_size;
+AR_list = [];
 Weight_takeoff_list = [];
-DOC_list = [];
-for i = 1:Weight_takeoff_number_of_steps
+for i = 1:AR_number_of_steps
     Adjustment_Weight_to_Thrust_ratio = 0;
     fail = 1;
     while fail == 1
@@ -231,39 +231,32 @@ for i = 1:Weight_takeoff_number_of_steps
             Thrust_at_0_7_Mach_liftoff = -24567*Mach_liftoff_0_7 + 42600; % JT9D
             Weight_Thrust = Weight_Thrust_0_7_Velocity_liftoff * Thrust_at_0_7_Mach_liftoff / Thrust_JT9D_sea_level_static + Adjustment_Weight_to_Thrust_ratio;
 
-            %% Weight section
+            %% Weight
             % Weight Wing = Weight_Wing * Weight_takeoff^1.195
             Weight_wing = 0.00945 * AR^0.8 * (1 + Taper_ratio)^0.25 * K_w * Eta^0.5 / ( (t_c + 0.03)^0.4 * cosd(Swept_angle) * WL_takeoff^0.695 );
-            Weight_Wing = Weight_Wing * Weight_takeoff^1.195;
 
             % Weight Fuselage = Weight_fuselage * Weight_takeoff^0.235
             l = (3.76*PAX / N_seats_abreast + 33.2) * Constant_Weight_fuselage;
             d = (1.75 * N_seats_abreast + 1.58 * N_aisles + 1) * Constant_Weight_fuselage;
             Weight_fuselage = 0.6727 * K_f * l^0.6 * d^0.72 * Eta^0.3;
-            Weight_fuselage = Weight_fuselage * Weight_takeoff^0.235;
 
             % Weight landing gear = 0.04 * Weight_takeoff
             Weight_landing_gear = 0.04;
-            Weight_landing_gear = 0.04 * Weight_takeoff;
 
             % Weight nacelle + Weight pylon = Weight_nacelle_pylon * Weight_takeoff
             Weight_nacelle_pylon = 0.0555 / Weight_Thrust;
-            Weight_nacelle_pylon = Weight_nacelle_pylon * Weight_takeoff;
 
             % Weight tail surface = 0.1967 * Weight_wing
             Weight_tail_surface = (K_ts + 0.08/Number_of_engine);
-            Weight_tail_surface = 0.1967 * Weight_wing
 
             % Weight tail surface + wing = Weight_tail_surface_wing * Weight_takeoff^1.195
-            Weight_tail_surface_wing = Weight_tail_surface + Weight_wing;
+            Weight_tail_surface_wing = (Weight_tail_surface + 1) * Weight_wing;
 
             % Weight power plant = Weight_power_plant * Weight_takeoff
             Weight_power_plant = 1/(3.58*Weight_Thrust);
-            Weight_power_plant = Weight_power_plant * Weight_takeoff;
 
             % Weight fuel = Weight_fuel * Weight_takeoff
             Weight_fuel = 1.0275 * Weight_fuel_takeoff;
-            Weight_fuel = Weight_fuel * Weight_takeoff;
 
             % Weight payload = Weight_payload [lb]
             Weight_payload =  215*PAX + Weight_cargo;
@@ -271,6 +264,37 @@ for i = 1:Weight_takeoff_number_of_steps
             % Weight fixed equipment = Weight_fixed_equipment + 0.035*Weight_takeoff
             Weight_fixed_equipment = 132 * PAX + 300 * Number_of_engine + 260 * N_flight_crew + 170* N_cabin_attendants;
 
+            % Construct Weight polynomial. a*x^1.195 + b*x^0.235 + c*x + d = 0
+            a = Weight_tail_surface_wing;
+            b = Weight_fuselage;
+            c = Weight_landing_gear + Weight_nacelle_pylon + Weight_power_plant + Weight_fuel + 0.035 - 1;
+            d = Weight_payload + Weight_fixed_equipment;
+
+
+            % Initalize loop variable
+            Weight_takeoff = 545000;
+            max_iterations = 5e5;
+            iteration = 0;
+            while abs(a*Weight_takeoff^1.195 + b*Weight_takeoff^0.235 + c*Weight_takeoff + d) > 100 && iteration < max_iterations
+                % Conditional Statement to determine whether guess is high or low
+                if (a*Weight_takeoff^1.195 + b*Weight_takeoff^0.235 + c*Weight_takeoff + d) > 0
+                    Weight_takeoff = Weight_takeoff + 1000;
+                else
+                    Weight_takeoff = Weight_takeoff - 1000;
+                end
+                iteration = iteration + 1;
+            end
+
+            if Debug == 1
+                fprintf('Debug. End Weight loop...\n\n');
+            end
+
+            % Weight calculation for advanced technology
+            if Advanced_technology == 1
+                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.3 - Weight_fuselage*Weight_takeoff^0.235*0.15 - (Weight_fixed_equipment + 0.035*Weight_takeoff)*0.1 - Weight_nacelle_pylon * Weight_takeoff * 0.2;
+            elseif Advanced_technology == 2
+                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.06 - Weight_fuselage*Weight_takeoff^0.235*0.06;
+            end
 
 
 
@@ -653,21 +677,21 @@ for i = 1:Weight_takeoff_number_of_steps
     Direct_operating_cost_per_passenger_mile = Direct_operating_cost_per_ton_mile * Payload_in_tons / PAX;
     DOC = Direct_operating_cost_per_ton_mile;
 
-    DOC_list(end+1) = DOC;
-    Weight_takeoff = Weight_takeoff + Weight_takeoff_step_size;
     Weight_takeoff_list(end+1) = Weight_takeoff;
+    AR = AR + AR_step_size;
+    AR_list(end+1) = AR;
+    fprintf("AR = %.4f\n", AR)
     fprintf("Weight_takeoff = %.4f\n", Weight_takeoff)
-    fprintf("DOC = %.4f\n", DOC)
 
 end
 
 figure;
-plot(AR_list, DOC_list, '-o', 'LineWidth', 2, 'MarkerSize', 8);
+plot(AR_list, Weight_takeoff_list, '-o', 'LineWidth', 2, 'MarkerSize', 8);
 grid on;
 xlabel('Aspect Ratio (AR)');
-ylabel('Direct Operating Cost (DOC)');
-title('Effect of Aspect Ratio on Direct Operating Cost');
-legend('DOC vs AR');
+ylabel('Weight Takeoff');
+title('Effect of Aspect Ratio on Weight Takeoff');
+legend('Weight Takeoff vs AR');
 
 
 

@@ -11,9 +11,9 @@ Debug = 0;
 
 Swept_angle = 0;
 AR = 9;
-Weight_takeoff = 100000;
+Weight_takeoff = 200000;
 Weight_takeoff_max = 1000000;
-Weight_takeoff_step_size = 10000;
+Weight_takeoff_step_size = 100000;
 
 
 % C_L loop constants
