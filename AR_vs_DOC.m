@@ -683,6 +683,7 @@ for i = 1:AR_number_of_steps
     fprintf("AR = %.4f\n", AR)
     fprintf("DOC = %.4f\n", DOC)
 
+
 end
 
 figure;
