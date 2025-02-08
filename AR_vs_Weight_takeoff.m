@@ -67,7 +67,7 @@ for i = 1:AR_number_of_steps
         Ajustment_Factor_Fuel = 0.02;
         Range_all_out_guess = 0;
         Range_all_out = 1E10;
-        Range_iteration_limit = 5000;
+        Range_iteration_limit = 10;
         % if AR > 13
         %     Range_iteration_limit = 5000;
         % end
@@ -605,7 +605,7 @@ for i = 1:AR_number_of_steps
 
         if fail == 1
             % fprintf("Debug.Fail after Gradient Check.\n")
-            Adjustment_Weight_to_Thrust_ratio = Adjustment_Weight_to_Thrust_ratio + 0.01;
+            Adjustment_Weight_to_Thrust_ratio = Adjustment_Weight_to_Thrust_ratio - 0.01;
         end
     end
 

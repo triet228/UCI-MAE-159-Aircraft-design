@@ -10,10 +10,10 @@ Debug = 0;
 
 
 Swept_angle = 0;
-AR = 9;
-Weight_takeoff = 200000;
-Weight_takeoff_max = 1000000;
-Weight_takeoff_step_size = 100000;
+AR = 8;
+Weight_takeoff = 190000;
+Weight_takeoff_max = 300000;
+Weight_takeoff_step_size = 10000;
 
 
 % C_L loop constants
@@ -658,9 +658,9 @@ for i = 1:Weight_takeoff_number_of_steps
     Direct_operating_cost_per_passenger_mile = Direct_operating_cost_per_ton_mile * Payload_in_tons / PAX;
     DOC = Direct_operating_cost_per_ton_mile;
 
-    DOC_list(end+1) = DOC;
+    DOC_list(end+1) = abs(DOC);
     Weight_takeoff = Weight_takeoff + Weight_takeoff_step_size;
-    Weight_takeoff_list(end+1) = Weight_takeoff;
+    Weight_takeoff_list(end+1) = abs(Weight_takeoff);
     fprintf("Weight_takeoff = %.4f\n", Weight_takeoff)
     fprintf("DOC = %.4f\n", DOC)
 

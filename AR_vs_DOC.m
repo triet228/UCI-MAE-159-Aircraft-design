@@ -5,14 +5,14 @@ format long g
 
 % Only change this section for different configuration
 Conventional_airfoil = 0; % 0 for supercritical airfoil 
-Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
+Advanced_technology = 1; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
 Debug = 0;
 
 
-Swept_angle = 0;
+Swept_angle = 30;
 
-AR = 3;
-AR_max = 20;
+AR = 6;
+AR_max = 8;
 AR_step_size = 1;
 
 
@@ -34,7 +34,15 @@ Taper_ratio = 0.35;
 K_f = 11.5; % constant for PAX > 135
 PAX = 210; % slang for passenger
 N_seats_abreast = 6;
-N_aisles = 2; % standard
+
+if N_seats_abreast == 7
+    N_aisles = 2;
+elseif N_seats_abreast == 6
+    N_aisles = 1; 
+else
+    fprintf("Check Seats Abreast.\n")
+end
+
 K_ts = 0.17; % 0.17 for wing engine, 0.25 for fuselage engine
 Weight_cargo = 8000; % lb
 N_flight_crew = 2;
@@ -67,7 +75,7 @@ for i = 1:AR_number_of_steps
         Ajustment_Factor_Fuel = 0.02;
         Range_all_out_guess = 0;
         Range_all_out = 1E10;
-        Range_iteration_limit = 5000;
+        Range_iteration_limit = 500;
         % if AR > 13
         %     Range_iteration_limit = 5000;
         % end
@@ -200,7 +208,7 @@ for i = 1:AR_number_of_steps
                 end
 
             end
-            if Debug == 1
+            if Debug == 2
                 fprintf('Debug. End C_L loop...\n');
             end
 
@@ -208,7 +216,7 @@ for i = 1:AR_number_of_steps
 
             %% TOFL
 
-            % Weight to Thurst ratio at 0.7 lift off velocity. Figure 5
+            % Weight to Thrust ratio at 0.7 lift off velocity. Figure 5
             if Number_of_engine == 2
                 temp = 28.3*Takeoff_field_length*10^(-3) + -9.09;
             elseif Number_of_engine == 3
@@ -237,8 +245,8 @@ for i = 1:AR_number_of_steps
 
             % Weight Fuselage = Weight_fuselage * Weight_takeoff^0.235
             l = (3.76*PAX / N_seats_abreast + 33.2) * Constant_Weight_fuselage;
-            d = (1.75 * N_seats_abreast + 1.58 * N_aisles + 1) * Constant_Weight_fuselage;
-            Weight_fuselage = 0.6727 * K_f * l^0.6 * d^0.72 * Eta^0.3;
+            diameter = (1.75 * N_seats_abreast + 1.58 * N_aisles + 1) * Constant_Weight_fuselage;
+            Weight_fuselage = 0.6727 * K_f * l^0.6 * diameter^0.72 * Eta^0.3;
 
             % Weight landing gear = 0.04 * Weight_takeoff
             Weight_landing_gear = 0.04;
@@ -285,7 +293,7 @@ for i = 1:AR_number_of_steps
                 iteration = iteration + 1;
             end
 
-            if Debug == 1
+            if Debug == 2
                 fprintf('Debug. End Weight loop...\n\n');
             end
 
@@ -391,7 +399,7 @@ for i = 1:AR_number_of_steps
             C_D_total = C_D_parasite + C_D_induced + Delta_C_D_compressibility;
 
             % Lift over Drag
-            Lift_Drag = C_L_average_cruise/C_D_total;
+            Lift_Drag = vpa(C_L_average_cruise/C_D_total);
 
             % Thurst
             Thrust_required_range = 0.5*(Weight_0 + Weight_1) / Lift_Drag;
@@ -404,7 +412,7 @@ for i = 1:AR_number_of_steps
             Range_cruise = (Velocity_cruise/Specific_fuel_consumption_at_35k) * Lift_Drag * log(Weight_0 / Weight_1);
             Range_all_out_guess = Range_climb + Range_cruise;
 
-            if Range_all_out_guess < Range_all_out
+            if abs(Range_all_out_guess) < abs(Range_all_out)
                 Ajustment_Factor_Fuel = Ajustment_Factor_Fuel + 0.01;
             else
                 Ajustment_Factor_Fuel = Ajustment_Factor_Fuel - 0.01;
@@ -432,7 +440,7 @@ for i = 1:AR_number_of_steps
             Thrust_available_at_35k = 3570*Mach_cruise + 7380;
         end
 
-        if Thrust_required_JT9D_thrust_check > Thrust_available_at_35k
+        if abs(Thrust_required_JT9D_thrust_check) > abs(Thrust_available_at_35k)
             if Debug == 1
                 fprintf('NOT ENOUGH THRUST TOP OF CLIMB\n')
             end
@@ -456,6 +464,7 @@ for i = 1:AR_number_of_steps
         Thrust_MLO_dry_takeoff_segment_1 = 45479 + -48077*Mach_liftoff + 38144*Mach_liftoff^2;
         Thrust_available_segment_1 = (Thrust_per_engine / Thrust_JT9D_sea_level_static) * Thrust_MLO_dry_takeoff_segment_1;
         Gradient_1 = ((((Number_of_engine - 1)*(Thrust_available_segment_1)) - Thrust_required_segment_1) / Weight_takeoff) * 100;
+        Gradient_1 = abs(Gradient_1);
 
         %% 2nd Segment
         % No Delta_C_D_gear in C_D_total_segment_2
@@ -463,6 +472,7 @@ for i = 1:AR_number_of_steps
         Lift_Drag_segment_2 = C_L_takeoff_segment_1 / C_D_total_segment_2;
         Thrust_required_segment_2 = Weight_takeoff / Lift_Drag_segment_2;
         Gradient_2 = ((((Number_of_engine - 1) * (Thrust_available_segment_1)) - Thrust_required_segment_2) / Weight_takeoff) * 100;
+        Gradient_2 = abs(Gradient_2);
 
         %% 3rd Segment
         C_L_max_clean = 0.191 + 13.1*t_c + -39.5*t_c^2;
@@ -475,6 +485,7 @@ for i = 1:AR_number_of_steps
         Thrust_JT9D_Max_Climb_Condition = 37594 + -36139*Mach_segment_3 + 18246*Mach_segment_3^2;
         Thrust_available_segment_3 = (Thrust_per_engine / Thrust_JT9D_sea_level_static) * Thrust_JT9D_Max_Climb_Condition;
         Gradient_3 = ((((Number_of_engine - 1) * Thrust_available_segment_3) - Thrust_required_segment_3) / Weight_takeoff) * 100;
+        Gradient_3 = abs(Gradient_3);
 
         %% Approach
         C_L_approach = C_L_max_takeoff / 1.3^2;
@@ -489,7 +500,7 @@ for i = 1:AR_number_of_steps
         Thrust_JT9D_Mach_approach_Max_Climb_Condition = -21428*(Mach_approach)^3 + 43382*(Mach_approach)^2 - 43523*(Mach_approach) + 37935;
         Thrust_available_approach = (Thrust_per_engine / Thrust_JT9D_sea_level_static) * Thrust_JT9D_Mach_approach_Max_Climb_Condition;
         Gradient_approach = ((Number_of_engine - 1)*Thrust_available_approach - Thrust_required_approach)*100/Weight_landing_approach;
-
+        Gradient_approach = abs(Gradient_approach);
 
         %% Landing
         C_L_landing = C_L_max_landing / 1.3^2;
@@ -503,6 +514,7 @@ for i = 1:AR_number_of_steps
         Thrust_JT9D_Mach_landing_dry = 45479 + -48077*Mach_landing + 38144*Mach_landing^2;
         Thrust_available_landing = (Thrust_per_engine / Thrust_JT9D_sea_level_static) * Thrust_JT9D_Mach_landing_dry;
         Gradient_landing =(Number_of_engine*Thrust_available_landing - Thrust_required_landing) * 100 / Weight_landing_approach;
+        Gradient_landing = abs(Gradient_landing);
 
         %% Gradient_check
         if Number_of_engine == 2
@@ -605,7 +617,7 @@ for i = 1:AR_number_of_steps
 
         if fail == 1
             % fprintf("Debug.Fail after Gradient Check.\n")
-            Adjustment_Weight_to_Thrust_ratio = Adjustment_Weight_to_Thrust_ratio + 0.01;
+            Adjustment_Weight_to_Thrust_ratio = Adjustment_Weight_to_Thrust_ratio - 0.01;
         end
     end
 
@@ -682,6 +694,10 @@ for i = 1:AR_number_of_steps
     AR_list(end+1) = AR;
     fprintf("AR = %.4f\n", AR)
     fprintf("DOC = %.4f\n", DOC)
+
+    if Span > 125
+        fprintf("Span!\n")
+    end
 
 
 end
