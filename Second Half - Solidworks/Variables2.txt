@@ -1,0 +1,9 @@
+﻿"Root Chord W"= 2 * "S_ref" / ( "Span W" * ( 1 + "Taper Ratio W" ) )'Scaling variable
+"Tip Chord W"= "Root Chord W" * "Taper Ratio W"'Scaling variable
+"Swept Angle W"= 30'Input
+"Span W"= 124.244494
+"AR W"= 8'Input
+"S_ref"= 1929.58677544867'Input
+"Taper Ratio W"= 0.35'Input
+"MAC W"= ( 2 / 3 ) * "Root Chord W" * ( 1 + "Taper Ratio W" - ( "Taper Ratio W" / ( 1 + "Taper Ratio W" ) ) )
+"Y W"= ( "Span W" / 6 ) * ( ( 1 + 2 * "Taper Ratio W" ) / ( 1 + "Taper Ratio W" ) )

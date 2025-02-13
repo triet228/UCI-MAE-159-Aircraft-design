@@ -1,0 +1,34 @@
+﻿"S_ref"= 1929.58677544867'Input
+"AR W"= 8'Input
+"Taper Ratio W"= 0.35'Input
+"Swept Angle W"= 30'Input
+"V H"= 0.34144516'Input
+"V V"= 0.07109747887'Input
+"Root Chord W"= 2 * "S_ref" / ( "Span W" * ( 1 + "Taper Ratio W" ) )'Scaling variable
+"Tip Chord W"= "Root Chord W" * "Taper Ratio W"'Scaling variable
+"Span W"= sqr ( "S_ref" * "AR W" )
+"MAC W"= ( 2 / 3 ) * "Root Chord W" * ( 1 + "Taper Ratio W" - ( "Taper Ratio W" / ( 1 + "Taper Ratio W" ) ) )
+"Y W"= ( "Span W" / 6 ) * ( ( 1 + 2 * "Taper Ratio W" ) / ( 1 + "Taper Ratio W" ) )
+"Root Chord H"= 2 * "S H" / ( "Span H" * ( 1 + "Taper Ratio H" ) )
+"Tip Chord H"= "Root Chord H" * "Taper Ratio H"
+"Span H"= sqr ( "S H" * "AR H" )
+"MAC H"= ( 2 / 3 ) * "Root Chord H" * ( 1 + "Taper Ratio H" - "Taper Ratio H" / ( 1 + "Taper Ratio H" ) )'Equation 4-19
+"Y H"= ( "Span H" / 6 ) * ( 1 + 2 * "Taper Ratio H" ) / ( 1 + "Taper Ratio H" )'Equation 4-20
+"Swept Angle H"= "Swept Angle W" + 5
+"AR H"= 4'Figure 6-17
+"Taper Ratio H"= 0.35'Figure 6-17
+"l H"= 0.5 * "Span W" * 0.4'25 - 40%
+"S H"= "V H" * 1929.586775 * 17.885852 / "l H"'Equation 6-3
+"Root Chord V"= 2 * "S V" / ( "Span V" * ( 1 + "Taper Ratio V" ) )
+"Tip Chord V"= "Root Chord V" * "Taper Ratio V"
+"Span V"= sqr ( "S V" * "AR V" )
+"MAC V"= ( 2 / 3 ) * "Root Chord V" * ( 1 + "Taper Ratio V" - "Taper Ratio V" / ( 1 + "Taper Ratio V" ) )
+"Y V"= ( "Span V" / 6 ) * ( 1 + 2 * "Taper Ratio V" ) / ( 1 + "Taper Ratio V" )
+"Swept Angle V"= "Swept Angle H"
+"AR V"= 1.6
+"Taper Ratio V"= 0.55
+"l V"= "l H"
+"S V"= "V V" * 1929.586775 * 17.885852 / "l V"
+
+
+
