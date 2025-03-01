@@ -5,7 +5,7 @@ format long g
 
 % Only change this section for different configuration
 Conventional_airfoil = 0; % 0 for supercritical airfoil 
-Advanced_technology = 1; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
+Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
 Debug = 0;
 
 
@@ -49,8 +49,8 @@ N_flight_crew = 2;
 N_cabin_attendants = 6;
 
 % Drag calculation constants
-Fuselage_length = 179; % from tip to tail [ft]
-Fuselage_diameter = 20;
+Fuselage_length = 165; % from tip to tail [ft]
+Fuselage_diameter = 14;
 
 % Climb cosntants
 Initial_cruise_altitude = 35000; % [ft]
