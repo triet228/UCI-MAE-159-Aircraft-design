@@ -5,14 +5,17 @@ format long g
 
 % Only change this section for different configuration
 Conventional_airfoil = 0; % 0 for supercritical airfoil 
-Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
+Advanced_technology = 1; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
 Debug = 0;
 
 
 Swept_angle = 30;
+Swept_angle_max = 35;
+Swept_angle_step_size = 5;
+Swept_angle_number_of_steps = (Swept_angle_max - Swept_angle) / Swept_angle_step_size;
 
-AR = 7;
-AR_max = 8;
+AR = 3;
+AR_max = 9;
 AR_step_size = 1;
 
 
@@ -61,11 +64,14 @@ JT8D = 0; % 1 for JT8D engine and 0 for JT9D engine
 
 %% Loops
 
-fprintf("Swept angle = %.4f degree.\n", Swept_angle)
+
 
 AR_number_of_steps = (AR_max - AR) / AR_step_size;
 AR_list = [];
-DOC_list = [];
+DOC_list = zeros(AR_number_of_steps + 1, Swept_angle_number_of_steps + 1);
+for j = 1:Swept_angle_number_of_steps
+    fprintf("Swept angle = %.4f degree.\n", Swept_angle)
+    AR = 3;
 for i = 1:AR_number_of_steps
     Adjustment_Weight_to_Thrust_ratio = 0;
     fail = 1;
@@ -75,7 +81,7 @@ for i = 1:AR_number_of_steps
         Ajustment_Factor_Fuel = 0.02;
         Range_all_out_guess = 0;
         Range_all_out = 1E10;
-        Range_iteration_limit = 500;
+        Range_iteration_limit = 5000;
         % if AR > 13
         %     Range_iteration_limit = 5000;
         % end
@@ -245,7 +251,8 @@ for i = 1:AR_number_of_steps
 
             % Weight Fuselage = Weight_fuselage * Weight_takeoff^0.235
             l = (3.76*PAX / N_seats_abreast + 33.2) * Constant_Weight_fuselage;
-            diameter = (1.75 * N_seats_abreast + 1.58 * N_aisles + 1) * Constant_Weight_fuselage;
+            % diameter = (1.75 * N_seats_abreast + 1.58 * N_aisles + 1) * Constant_Weight_fuselage;
+            diameter = 14;
             Weight_fuselage = 0.6727 * K_f * l^0.6 * diameter^0.72 * Eta^0.3;
 
             % Weight landing gear = 0.04 * Weight_takeoff
@@ -299,7 +306,7 @@ for i = 1:AR_number_of_steps
 
             % Weight calculation for advanced technology
             if Advanced_technology == 1
-                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.3 - Weight_fuselage*Weight_takeoff^0.235*0.15 - (Weight_fixed_equipment + 0.035*Weight_takeoff)*0.1 - Weight_nacelle_pylon * Weight_takeoff * 0.2;
+                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.3 - Weight_fuselage*Weight_takeoff^0.235*0.15 - (Weight_fixed_equipment + 0.035*Weight_takeoff)*0.1 - Weight_nacelle_pylon * Weight_takeoff * 0.2 + Weight_power_plant * Weight_takeoff * 0.1;
             elseif Advanced_technology == 2
                 Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.06 - Weight_fuselage*Weight_takeoff^0.235*0.06;
             end
@@ -376,6 +383,9 @@ for i = 1:AR_number_of_steps
             % Thrust available per engine
             Thrust_available_at_20k = 15400;
             Specific_fuel_consumption_at_20k = 0.65; % constant varied with altitude and engine type
+            if Advanced_technology == 1
+                Specific_fuel_consumption_at_20k = Specific_fuel_consumption_at_20k * 1.1;
+            end
             Thrust_available = ( Thrust_per_engine / Thrust_JT9D_sea_level_static ) * Thrust_available_at_20k;
 
             Rate_of_climb = 101 * (Number_of_engine * Thrust_available - Thrust_required_climb) * Velocity_climb / Weight_climb;
@@ -407,6 +417,9 @@ for i = 1:AR_number_of_steps
 
             % Engine graph at 35k
             Specific_fuel_consumption_at_35k = 0.392*Mach_cruise + 0.30856;
+            if Advanced_technology == 1
+                Specific_fuel_consumption_at_35k = Specific_fuel_consumption_at_35k * 1.1;
+            end
 
             % Range [nmi]
             Range_cruise = (Velocity_cruise/Specific_fuel_consumption_at_35k) * Lift_Drag * log(Weight_0 / Weight_1);
@@ -689,11 +702,14 @@ for i = 1:AR_number_of_steps
     Direct_operating_cost_per_passenger_mile = Direct_operating_cost_per_ton_mile * Payload_in_tons / PAX;
     DOC = Direct_operating_cost_per_ton_mile;
 
-    DOC_list(end+1) = DOC;
-    AR = AR + AR_step_size;
-    AR_list(end+1) = AR;
+
     fprintf("AR = %.4f\n", AR)
     fprintf("DOC = %.4f\n", DOC)
+
+    DOC_list(i, j) = DOC;
+    AR = AR + AR_step_size;
+    AR_list(end+1) = AR;
+
 
     if Span > 125
         fprintf("Span!\n")
@@ -701,7 +717,8 @@ for i = 1:AR_number_of_steps
 
 
 end
-
+Swept_angle = Swept_angle+Swept_angle_step_size;
+end
 % figure;
 % plot(AR_list, DOC_list, '-o', 'LineWidth', 2, 'MarkerSize', 8);
 % grid on;
