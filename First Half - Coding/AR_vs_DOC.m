@@ -5,7 +5,7 @@ format long g
 
 % Only change this section for different configuration
 Conventional_airfoil = 0; % 0 for supercritical airfoil 
-Advanced_technology = 1; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
+Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
 Debug = 0;
 
 
@@ -14,7 +14,7 @@ Swept_angle_max = 35;
 Swept_angle_step_size = 5;
 Swept_angle_number_of_steps = (Swept_angle_max - Swept_angle) / Swept_angle_step_size;
 
-AR = 3;
+AR = 7;
 AR_max = 9;
 AR_step_size = 1;
 
@@ -71,7 +71,7 @@ AR_list = [];
 DOC_list = zeros(AR_number_of_steps + 1, Swept_angle_number_of_steps + 1);
 for j = 1:Swept_angle_number_of_steps
     fprintf("Swept angle = %.4f degree.\n", Swept_angle)
-    AR = 3;
+    AR = 7;
 for i = 1:AR_number_of_steps
     Adjustment_Weight_to_Thrust_ratio = 0;
     fail = 1;

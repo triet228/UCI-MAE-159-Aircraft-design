@@ -4,13 +4,16 @@ Canvas comments and announcements:
 - What specific parts of aircraft are weights reduced/increased? By what percent/quantity? What are the differences in fuel burn? SFC? Graphs of data? Ect. 
 - conventional aircraft design vs advanced technology ✅
 - Details for the conventional aircraft ✅
-- vertical tail span too short. needs almost double the length
+- vertical tail span too short. needs almost double the length ✅
 - aircraft should be low wing ✅
-- tails are too small; choose a larger volume coefficient or check your math
-- fuselage is too short, you won't be able to fit the interior elements inside
+- tails are too small; choose a larger volume coefficient or check your math ✅
+- fuselage is too short, you won't be able to fit the interior elements inside ✅
+- JT9D advanced should be 10% increase in power plant weight and a 10% decrease in SFC ✅
+
+
 - first class aisle width is too narrow; they are not usually 6 abreast 
 - 3 views should show cargo placement 
-- JT9D advanced should be 10% increase in power plant weight and a 10% decrease in SFC ✅
+- Need to add hybrid aircraft
 
 
 
