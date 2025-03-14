@@ -11,9 +11,8 @@ Canvas comments and announcements:
 - JT9D advanced should be 10% increase in power plant weight and a 10% decrease in SFC ✅
 
 
-- first class aisle width is too narrow; they are not usually 6 abreast 
+- first class aisle width is too narrow; they are not usually 6 abreast ✅
 - 3 views should show cargo placement 
-- Need to add hybrid aircraft
 
 
 

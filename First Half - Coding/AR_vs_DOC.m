@@ -5,16 +5,17 @@ format long g
 
 % Only change this section for different configuration
 Conventional_airfoil = 0; % 0 for supercritical airfoil 
-Advanced_technology = 0; % Adjust weight after weight loop: 1 for composite material, 2 for aluminum/lithium structure
+Advanced_technology = 0; % Adjust weight after weight loop: 0 for all composite material, 1 for all aluminum
 Debug = 0;
 
 
-Swept_angle = 30;
+Swept_angle = 25;
 Swept_angle_max = 35;
 Swept_angle_step_size = 5;
 Swept_angle_number_of_steps = (Swept_angle_max - Swept_angle) / Swept_angle_step_size;
 
-AR = 7;
+AR_min = 7;
+AR = AR_min;
 AR_max = 9;
 AR_step_size = 1;
 
@@ -66,12 +67,12 @@ JT8D = 0; % 1 for JT8D engine and 0 for JT9D engine
 
 
 
-AR_number_of_steps = (AR_max - AR) / AR_step_size;
+AR_number_of_steps = (AR_max - AR_min) / AR_step_size;
 AR_list = [];
 DOC_list = zeros(AR_number_of_steps + 1, Swept_angle_number_of_steps + 1);
 for j = 1:Swept_angle_number_of_steps
     fprintf("Swept angle = %.4f degree.\n", Swept_angle)
-    AR = 7;
+    AR = AR_min;
 for i = 1:AR_number_of_steps
     Adjustment_Weight_to_Thrust_ratio = 0;
     fail = 1;
@@ -280,11 +281,17 @@ for i = 1:AR_number_of_steps
             Weight_fixed_equipment = 132 * PAX + 300 * Number_of_engine + 260 * N_flight_crew + 170* N_cabin_attendants;
 
             % Construct Weight polynomial. a*x^1.195 + b*x^0.235 + c*x + d = 0
-            a = Weight_tail_surface_wing;
-            b = Weight_fuselage;
-            c = Weight_landing_gear + Weight_nacelle_pylon + Weight_power_plant + Weight_fuel + 0.035 - 1;
-            d = Weight_payload + Weight_fixed_equipment;
-
+            if Advanced_technology == 0
+                a = Weight_tail_surface_wing;
+                b = Weight_fuselage;
+                c = Weight_landing_gear + Weight_nacelle_pylon + Weight_power_plant + Weight_fuel + 0.035 - 1;
+                d = Weight_payload + Weight_fixed_equipment;
+            elseif Advanced_technology == 1
+                a = Weight_tail_surface_wing*0.7;
+                b = Weight_fuselage*0.85;
+                c = Weight_landing_gear + Weight_nacelle_pylon*0.8 + Weight_power_plant*1.1 + Weight_fuel + 0.035 - 1;
+                d = Weight_payload + Weight_fixed_equipment*0.9;
+            end
 
             % Initalize loop variable
             Weight_takeoff = 545000;
@@ -293,9 +300,9 @@ for i = 1:AR_number_of_steps
             while abs(a*Weight_takeoff^1.195 + b*Weight_takeoff^0.235 + c*Weight_takeoff + d) > 100 && iteration < max_iterations
                 % Conditional Statement to determine whether guess is high or low
                 if (a*Weight_takeoff^1.195 + b*Weight_takeoff^0.235 + c*Weight_takeoff + d) > 0
-                    Weight_takeoff = Weight_takeoff + 1000;
+                    Weight_takeoff = Weight_takeoff + 1;
                 else
-                    Weight_takeoff = Weight_takeoff - 1000;
+                    Weight_takeoff = Weight_takeoff - 1;
                 end
                 iteration = iteration + 1;
             end
@@ -303,14 +310,6 @@ for i = 1:AR_number_of_steps
             if Debug == 2
                 fprintf('Debug. End Weight loop...\n\n');
             end
-
-            % Weight calculation for advanced technology
-            if Advanced_technology == 1
-                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.3 - Weight_fuselage*Weight_takeoff^0.235*0.15 - (Weight_fixed_equipment + 0.035*Weight_takeoff)*0.1 - Weight_nacelle_pylon * Weight_takeoff * 0.2 + Weight_power_plant * Weight_takeoff * 0.1;
-            elseif Advanced_technology == 2
-                Weight_takeoff = Weight_takeoff - Weight_tail_surface_wing*Weight_takeoff^1.195*0.06 - Weight_fuselage*Weight_takeoff^0.235*0.06;
-            end
-
 
 
             % Reference area
